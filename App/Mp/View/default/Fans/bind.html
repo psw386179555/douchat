@@ -5,144 +5,172 @@
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black" />
         <meta name="format-detection" content="telephone=no" />
-        <title>个人信息绑定</title>
-        {:hook('jssdk', false)}
-        {:hook('import_js', 'jquery')}
-        {:hook('import_css', 'weui')}
-        <style>
-            .weui_cells {
-                margin: 0px;
-            }
-            .weui_cells_access{
-                margin-bottom: 10px;
-            }
-        </style>
+        <link rel="stylesheet" href="__PUBLIC__/Common/layui-v1.0.7/layui/css/layui.css">
+        <script type="text/javascript" src="__PUBLIC__/Common/layui-v1.0.7/layui/layui.js"></script>
+        <title>个人信息绑定</title> 
     </head>
+    <style type="text/css">
+    .container{
+    	margin: 10px 5px 0px -30px;
+    }
+     </style>
+      <script type="text/javascript">
+			layui.use(['form','upload','jquery'], function(){
+			  var form = layui.form()
+			  ,upload=layui.upload
+			  ,$=layui.jquery;
 
-    <body>
-        <div class="page cell">
-            <form action="{:U('MobileBase/fans_bind')}" method="post">
-            <div class="weui_cells weui_cells_access">
-                <a class="weui_cell" href="javascript:;">
-                    <div class="weui_cell_hd"><img src="<if condition="$fans_info['headimgurl']">{$fans_info['headimgurl']}<else />__PUBLIC__/Admin/img/noname.jpg</if>" alt="" style="width:80px;margin-right:5px;display:block"></div>
-                    <div class="weui_cell_bd weui_cell_primary">
-                        &nbsp;&nbsp;头像
-                    </div>
-                    <div class="weui_cell_ft">
-                    </div>
-                </a>
-            </div>
+			  form.on('submit(formDemo)', function(data){
+			  	var data = $('form').serialize();			  
+			    var url = $('form').attr('action');
+			    $.ajax({
+			        'url' : url,
+			        'type' : 'post',
+			        'dataType' : 'json',
+			        'data' : data,   
+			        success : function(data) {
+			            if (data.errcode == 1) {
+			                 layer.msg(JSON.stringify(data.errmsg));
+			            } else {
+			                layer.msg(JSON.stringify(data.errmsg));
+			            }
+			        },
+			        error : function() {        	
+			          layer.msg(JSON.stringify('提交数据失败!'));
+			         // return false;
+			          
+			        },     
+			    });
+			    layer.msg(JSON.stringify(data.field));
+			    return false;
+			  });
 
-            <div class="weui_cells weui_cells_form">
-                <div class="weui_cell">
-                    <div class="weui_cell_hd"><label class="weui_label">昵称</label></div>
-                    <div class="weui_cell_bd weui_cell_primary">
-                        <input class="weui_input" name="nickname" type="text" placeholder="请输入你的昵称" value="{$fans_info.nickname}">
-                    </div>
-                </div>
-            </div>
+			   upload({
+			     url: "{:U('Mp/Material/layui_picupload')}"
+			    ,elem: '#test' //指定原始元素，默认直接查找class="layui-upload-file"
+			    ,method: 'get' //上传接口的http类型
+			    ,dataType: 'json'
+			    ,success: function(res){	 		    	
+			      lay_demo_upload.src = res.url;
+			    }
 
-            <div class="weui_cells weui_cells_form">
-                <div class="weui_cell">
-                    <div class="weui_cell_hd"><label class="weui_label">姓名</label></div>
-                    <div class="weui_cell_bd weui_cell_primary">
-                        <input class="weui_input" name="relname" type="text" placeholder="请输入你的真实姓名" value="{$fans_info.relname}">
-                    </div>
-                </div>
-            </div>
+			  });
 
-            <div class="weui_cells">
-                <div class="weui_cell weui_cell_select weui_select_after">
-                    <div class="weui_cell_hd">
-                        <label for="" class="weui_label">性别</label>
-                    </div>
-                    <div class="weui_cell_bd weui_cell_primary">
-                        <select class="weui_select" name="sex">
-                            <option value="0" >保密</option>
-                            <option value="1" <if condition="$fans_info['sex'] eq 1">selected</if>>男</option>
-                            <option value="2" <if condition="$fans_info['sex'] eq 2">selected</if>>女</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
+			   $('.imgselect').on('click',function(){
+			   	  var imgurl=$(this).attr('src');
+			      $('#headimgurl').val(imgurl);
+			      $('#lay_demo_upload').attr('src',imgurl);
+			   })
 
-            <div class="weui_cells weui_cells_form">
-                <div class="weui_cell">
-                    <div class="weui_cell_hd"><label class="weui_label">手机号</label></div>
-                    <div class="weui_cell_bd weui_cell_primary">
-                        <input class="weui_input" name="mobile" type="text" placeholder="请输入你的手机号" value="{$fans_info.mobile}">
-                    </div>
-                </div>
-            </div>
-
-            <div class="weui_cells weui_cells_form">
-                <div class="weui_cell">
-                    <div class="weui_cell_bd weui_cell_primary">
-                        <textarea rows="4" name="signature" class="weui_textarea" placeholder="个性签名">{$fans_info.signature}</textarea>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bd spacing" style="margin-top:20px;">
-               
-                <div class="button_sp_area">
-                   
-                    <a href="javascript:;" class="weui_btn weui_btn_plain_primary" id="save">保存</a>
-            
-                </div>
-            </div>
-            </form>
-        </div>  
-
-    <div id="loadingToast" class="weui_loading_toast" style="display: none;">
-        <div class="weui_mask_transparent"></div>
-        <div class="weui_toast">
-            <div class="weui_loading">
-                <div class="weui_loading_leaf weui_loading_leaf_0"></div>
-                <div class="weui_loading_leaf weui_loading_leaf_1"></div>
-                <div class="weui_loading_leaf weui_loading_leaf_2"></div>
-                <div class="weui_loading_leaf weui_loading_leaf_3"></div>
-                <div class="weui_loading_leaf weui_loading_leaf_4"></div>
-                <div class="weui_loading_leaf weui_loading_leaf_5"></div>
-                <div class="weui_loading_leaf weui_loading_leaf_6"></div>
-                <div class="weui_loading_leaf weui_loading_leaf_7"></div>
-                <div class="weui_loading_leaf weui_loading_leaf_8"></div>
-                <div class="weui_loading_leaf weui_loading_leaf_9"></div>
-                <div class="weui_loading_leaf weui_loading_leaf_10"></div>
-                <div class="weui_loading_leaf weui_loading_leaf_11"></div>
-            </div>
-            <p class="weui_toast_content">数据加载中</p>
-        </div>
-    </div>      
- 
-    <script type="text/javascript">
-        $(document).on('click', '#save', function() {
-            var data = $('form').serialize();
-            var url = $('form').attr('action');
-            $.ajax({
-                'url' : url,
-                'type' : 'post',
-                'dataType' : 'json',
-                'data' : data,
-                beforeSend : function() {
-                    $('#loadingToast').show();
-                },
-                success : function(data) {
-                    if (data.errcode == 1) {
-                        alert(data.errmsg);
-                        window.location.href = data.url;
-                    } else {
-                        alert(data.errmsg);
-                    }
-                },
-                error : function() {
-                    alert('提交保存数据请求失败');
-                },
-                complete : function() {
-                    $('#loadingToast').hide();
-                }
-            });
-        });
+			 
+			});
     </script>
-    </body>
+
+<body>
+	<div class="container">
+	<form class="layui-form" action="{:U('MobileBase/fans_bind')}">
+
+	  <div class="layui-form-item">
+	  	 <label class="layui-form-label">头像</label>
+	  	<div class="layui-input-inline">
+	       <input type="file" name="file" class="layui-upload-file" id="test">
+	       <img class="imgselect" src="http://ohy7djn2s.bkt.clouddn.com/1-15031PGF8-51.jpg" style="width:38px;height:38px;margin-right:10px;display:inline">
+	       <img class="imgselect" src="http://ohy7djn2s.bkt.clouddn.com/u=3557058467,283518607&fm=23&gp=0.jpg"  style="width:38px;height:38px;margin-right:10px;display:inline">	   
+	      <img class="imgselect" src="http://ohy7djn2s.bkt.clouddn.com/u=1130453322,594874643&fm=11&gp=0.jpg"  style="width:38px;height:38px;margin-right:10px;display:inline">	  
+	     </div>	
+	      <div class="layui-form-mid layui-word-aux">无法上传头像，请点击选择右边三个头像</div>     	   
+	  </div>
+
+	   <div class="layui-form-item">
+	  	 <label class="layui-form-label">自选头像</label>
+	  	  <div class="layui-input-block">
+	  	  <input type="hidden" name="headimgurl" class="layui-input" id="headimgurl" id="headimgurl" value="{$fans_info['headimgurl']}">	          
+	      <img id="lay_demo_upload" src="<if condition="$fans_info['headimgurl']">{$fans_info['headimgurl']}<else />__PUBLIC__/Admin/img/noname.jpg</if>"  style="width:38px;height:38px;margin-right:10px;display:inline">	  
+	     </div>
+	     	   
+	  </div>
+
+
+	  <div class="layui-form-item">
+	    <label class="layui-form-label">昵称</label>
+	    <div class="layui-input-block">
+	      <input type="text" name="nickname" required  lay-verify="required" placeholder="请输入你的昵称" autocomplete="off" class="layui-input" value="{$fans_info.nickname}">
+	    </div>
+	  </div>
+
+	  <div class="layui-form-item">
+	    <label class="layui-form-label">姓名</label>
+	    <div class="layui-input-inline">
+	      <input type="text" name="relname" required lay-verify="required" placeholder="请输入你的真实姓名" autocomplete="off" class="layui-input" value="{$fans_info.relname}">
+	    </div>
+	    <div class="layui-form-mid layui-word-aux">将用于借教室的身份验证</div>
+	  </div>
+
+	  <div class="layui-form-item">   
+	    <label class="layui-form-label">班级</label>
+	    <div class="layui-input-inline">
+	      <select name="zhuanye">
+	        <option value="">请选择专业</option>
+	        <option value="流体">流体</option>
+	        <option value="建环">建环</option>
+	        <option value="流卓">流卓</option>
+	        <option value="热能">热能</option>
+	        <option value="节能">节能</option>
+	        <option value="新能源">新能源</option>
+	      </select>
+	    </div>    
+	    <div class="layui-input-inline">
+	      <select name="classnumber">
+	        <option value="">请选择班级</option>
+	        <option value="1601">1601</option>
+	        <option value="1602">1602</option>
+	        <option value="1501">1501</option>
+	        <option value="1502">1502</option>
+	        <option value="1401">1401</option>
+	        <option value="1402">1402</option>
+	        <option value="1301">1301</option>
+	        <option value="1302">1302</option>
+	      </select>
+	    </div>
+	  </div>
+
+	  <div class="layui-form-item">
+	    <label class="layui-form-label">兴趣爱好</label>
+	    <div class="layui-input-block">
+	      <input type="checkbox" name="like[write]" title="写作">
+	      <input type="checkbox" name="like[read]" title="阅读" checked>
+	      <input type="checkbox" name="like[dai]" title="发呆">
+	    </div>
+	  </div>
+
+	  <div class="layui-form-item">
+	    <label class="layui-form-label">手机号</label>
+	    <div class="layui-input-block">
+	      <input type="number" name="mobile" placeholder="请输入你的手机号" required lay-verify="phone" class="layui-input"  value="{$fans_info.mobile}">
+	    </div>
+	  </div>
+
+	  <div class="layui-form-item">
+	    <label class="layui-form-label">性别</label>
+	    <div class="layui-input-block">
+	      <input type="radio" name="sex" value="1" title="男" <if condition="$fans_info['sex'] eq 1">checked</if>>
+	      <input type="radio" name="sex" value="2" title="女" <if condition="$fans_info['sex'] eq 2">checked</if>>
+	    </div>
+	  </div>
+
+	  <div class="layui-form-item layui-form-text">
+	    <label class="layui-form-label">个性签名</label>
+	    <div class="layui-input-block">
+	      <textarea name="signature" placeholder="请输入内容" class="layui-textarea" required  lay-verify="required" >{$fans_info.signature}</textarea>
+	    </div>
+	  </div>
+
+	   <div class="layui-form-item">
+	    <div class="layui-input-block">
+	      <button class="layui-btn layui-btn-lg" lay-submit lay-filter="formDemo">立即提交</button>     
+	    </div>
+	   </div>
+	</form>
+	</div> 
+</body>
 </html>

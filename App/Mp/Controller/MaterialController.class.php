@@ -396,6 +396,59 @@ class MaterialController extends BaseController {
     public function pull() {
         $this->success('正在拉取中。。。');
     }
+    /*
+     *layui图片上传
+     * 
+     */    
+    public function layui_picupload(){
+        global $_G;
+        import('Org.Util.UploadFile');
+        $upload_time = time();
+        $upload_path = './Uploads/Pictures/' . date('Ymd', $upload_time) . '/';
+        if (!file_exists($upload_path)) {
+            $dirs = explode('/', $upload_path);
+            $dir = $dirs[0] . '/';
+            for ($i=1, $j=count($dirs)-1; $i<$j; $i++) {
+                $dir .= $dirs[$i] . '/';
+                if (!is_dir($dir)) {
+                    mkdir($dir, 0777);
+                }
+            }
+        }
+        $upload = new \UploadFile();
+        $upload->maxSize  = 1024*20*1000;
+        $upload->allowExts  = array('jpg', 'gif', 'png', 'jpeg');
+        $upload->savePath = $upload_path;
+        if(!$upload->upload()) {
+            $result['success']=0;
+            $result['message']="fail";
+            $result['url']='';
+            echo json_encode($result);
+        }else{
+            //上传成功,将信息存入数据库
+            $info =  $upload->getUploadFileInfo();
+            $data['mpid'] = get_mpid();
+            $data['user_id'] = $this->user_id;
+            $data['file_name'] = $info[0]['name'];
+            $data['file_extension'] = $info[0]['extension'];
+            $data['file_size'] = $info[0]['size'];
+            $data['file_path'] = $info[0]['savepath'] . $info[0]['savename'];
+            $data['hash'] = $info[0]['hash'];
+            $data['create_time'] = $upload_time;
+            $data['item_type'] = 'image';
+            $Attach = D('Attach');
+            $attach_id = $Attach->add($data);
+            
+            $imgUrl = $info[0]['savepath'] . $info[0]['savename'];
+            $imgUrl = tomedia($imgUrl);
+            $result['success']=1;
+            $result['message']="success";
+            $result['url']=$imgUrl;
+           //  echo json_encode('{"code":1, "msg":"成功上传","url":"123.jpg"}');
+           // $this->ajaxReturn($result);
+           echo json_encode($result);
+        }
+    }
 }
 
  ?>
